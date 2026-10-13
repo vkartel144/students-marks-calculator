@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Mark Statistics Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col antialiased">
+
+    <header class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-sm">
+                    <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Student Mark Statistics Engine</h1>
+                    <p class="text-xs text-indigo-200">Array-based Data Structure & Statistical Analysis</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="loadSampleData()" class="bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> Sample Data
+                </button>
+                <button onclick="openDeployModal()" class="bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-xl transition backdrop-blur-sm flex items-center gap-2">
+                    <i class="fa-solid fa-rocket"></i> Deployment Guide
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Column: Input Form & Controls -->
+        <div class="lg:col-span-1 space-y-6">
+            
+            <!-- Add Student Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+                <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-indigo-600"></i> Add Student Record
+                </h2>
+                <form id="studentForm" onsubmit="handleAddStudent(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Student Name</label>
+                        <input type="text" id="studentName" required placeholder="e.g. Alice Johnson"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Mark (%)</label>
+                        <input type="number" id="studentMark" min="0" max="100" step="0.1" required placeholder="e.g. 85.5"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md shadow-indigo-100 transition flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-plus"></i> Push to Array
+                    </button>
+                </form>
+            </div>
+
+            <!-- Configuration Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-4">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-600"></i> Configuration
+                </h2>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Passing Threshold</label>
+                        <span id="passMarkDisplay" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">50%</span>
+                    </div>
+                    <input type="range" id="passMarkSlider" min="0" max="100" value="50" oninput="updatePassMark(this.value)"
+                        class="w-full accent-indigo-600 cursor-pointer">
+                </div>
+                <button onclick="clearAllData()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 text-sm border border-rose-200">
+                    <i class="fa-solid fa-trash-can"></i> Clear All Array Data
+                </button>
+            </div>
+
+            <!-- Advanced Statistics Summary Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-3">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-indigo-600"></i> Array Metrics
+                </h2>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block uppercase font-semibold">Median</span>
+                        <span id="statMedian" class="text-sm font-bold text-slate-800 mt-1 block">0%</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block uppercase font-semibold">Mode</span>
+                        <span id="statMode" class="text-sm font-bold text-slate-800 mt-1 block">-</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 col-span-2">
+                        <span class="text-slate-400 block uppercase font-semibold">Standard Deviation (σ)</span>
+                        <span id="statStdDev" class="text-sm font-bold text-slate-800 mt-1 block">0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Array State Inspector -->
+            <div class="bg-slate-900 text-slate-200 rounded-2xl shadow-sm p-5 font-mono text-xs overflow-hidden">
+                <div class="flex justify-between items-center mb-3 border-b border-slate-800 pb-2">
+                    <span class="text-indigo-400 font-bold flex items-center gap-1.5"><i class="fa-solid fa-code"></i> Array State</span>
+                    <span id="arrayLengthBadge" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[10px]">0 items</span>
+                </div>
+                <pre id="arrayStateViewer" class="overflow-x-auto text-[11px] text-emerald-400 max-h-40 scrollbar-thin">[]</pre>
+            </div>
+
+        </div>
+
+        <!-- Right Column: KPI Cards & Detailed Stats -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Students</span>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span id="statTotal" class="text-2xl font-bold text-slate-900">0</span>
+                        <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-users text-sm"></i></div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Average Mark</span>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span id="statAverage" class="text-2xl font-bold text-slate-900">0%</span>
+                        <div class="p-2 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-chart-line text-sm"></i></div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Highest Mark</span>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span id="statHighest" class="text-2xl font-bold text-slate-900">0%</span>
+                        <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-trophy text-sm"></i></div>
+                    </div>
+                    <span id="statHighestNames" class="text-[11px] text-slate-500 truncate mt-1">-</span>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Lowest Mark</span>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span id="statLowest" class="text-2xl font-bold text-slate-900">0%</span>
+                        <div class="p-2 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-arrow-trend-down text-sm"></i></div>
+                    </div>
+                    <span id="statLowestNames" class="text-[11px] text-slate-500 truncate mt-1">-</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Pass vs Fail Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 mb-4 flex items-center justify-between">
+                        <span>Pass / Fail Breakdown</span>
+                        <span id="passRatioBadge" class="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg">0% Passing</span>
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4 my-2">
+                        <div class="bg-emerald-50/60 border border-emerald-100 p-4 rounded-xl text-center">
+                            <span class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Passing</span>
+                            <div id="passCount" class="text-3xl font-extrabold text-emerald-600 mt-1">0</div>
+                        </div>
+                        <div class="bg-rose-50/60 border border-rose-100 p-4 rounded-xl text-center">
+                            <span class="text-xs font-semibold text-rose-700 uppercase tracking-wider">Failing</span>
+                            <div id="failCount" class="text-3xl font-extrabold text-rose-600 mt-1">0</div>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden flex mt-4">
+                        <div id="passBar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                        <div id="failBar" class="bg-rose-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Grade Distribution Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                    <h3 class="text-sm font-bold text-slate-900 mb-4">Grade Distribution (A - F)</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                <span>Grade A (90-100%)</span>
+                                <span id="gradeACount">0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="gradeABar" class="bg-indigo-600 h-full transition-all duration-500" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                <span>Grade B (80-89%)</span>
+                                <span id="gradeBCount">0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="gradeBBar" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                <span>Grade C (70-79%)</span>
+                                <span id="gradeCCount">0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="gradeCBar" class="bg-cyan-500 h-full transition-all duration-500" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                <span>Grade D (Threshold - 69%)</span>
+                                <span id="gradeDCount">0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="gradeDBar" class="bg-amber-500 h-full transition-all duration-500" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                <span>Grade F (Below Threshold)</span>
+                                <span id="gradeFCount">0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="gradeFBar" class="bg-rose-500 h-full transition-all duration-500" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-table-list text-indigo-600"></i> Student Records & Ranks
+                    </h3>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="relative flex-grow sm:flex-grow-0">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
+                            <input type="text" id="searchInput" oninput="handleSearchFilter()" placeholder="Search student..."
+                                class="w-full sm:w-48 pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <select id="sortSelect" onchange="handleSortChange()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="rank-asc">Sort: Rank / Highest Mark</option>
+                            <option value="name-asc">Sort: Name (A-Z)</option>
+                            <option value="name-desc">Sort: Name (Z-A)</option>
+                            <option value="mark-desc">Sort: Mark (High to Low)</option>
+                            <option value="mark-asc">Sort: Mark (Low to High)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-400 text-[11px] font-semibold uppercase tracking-wider border-b border-slate-100">
+                                <th class="py-3 px-4">Rank</th>
+                                <th class="py-3 px-4">Student Name</th>
+                                <th class="py-3 px-4">Mark</th>
+                                <th class="py-3 px-4">Grade</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody" class="text-sm divide-y divide-slate-100">
+                            <!-- Populated dynamically via JS arrays -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyTableState" class="hidden text-center py-8 text-slate-400 text-sm">
+                    No student records found in the array matching your criteria.
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <div id="deployModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 animate-in fade-in duration-200">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-rocket text-indigo-600"></i> Deployment Guide (GitHub & Vercel)
+                </h3>
+                <button onclick="closeDeployModal()" class="text-slate-400 hover:text-slate-600 transition p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-slate-600">
+                <p>This single-file web application can be deployed instantly for free on either GitHub Pages or Vercel with zero configuration required!</p>
+                
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-900 flex items-center gap-1.5"><i class="fa-brands fa-github text-slate-900"></i> 1. Deploying on GitHub Pages</h4>
+                    <ol class="list-decimal list-inside space-y-1 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <li>Create a new public repository on GitHub.</li>
+                        <li>Upload or commit this file as <code class="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-800">index.html</code>.</li>
+                        <li>Go to repository <strong>Settings</strong> &gt; <strong>Pages</strong>.</li>
+                        <li>Under Build and deployment, set branch to <code class="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-800">main</code> and folder to <code class="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-800">/ (root)</code>.</li>
+                        <li>Save and your URL will be generated automatically!</li>
+                    </ol>
+                </div>
+
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-900 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation text-black"></i> 2. Deploying on Vercel</h4>
+                    <ol class="list-decimal list-inside space-y-1 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <li>Go to <a href="https://vercel.com" target="_blank" class="text-indigo-600 underline">Vercel Dashboard</a> and log in with GitHub.</li>
+                        <li>Click <strong>Add New...</strong> &gt; <strong>Project</strong> and import your repository.</li>
+                        <li>Leave framework preset as <strong>Other</strong> (since it's pure HTML/JS).</li>
+                        <li>Click <strong>Deploy</strong> to get a live global deployment link instantly.</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeDeployModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-xl text-sm transition shadow-sm">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Core Array holding student objects: { id, name, mark }
+        let studentsArray = [
+            { id: 1, name: "Alice Johnson", mark: 92.5 },
+            { id: 2, name: "Bob Smith", mark: 78.0 },
+            { id: 3, name: "Charlie Davis", mark: 45.0 },
+            { id: 4, name: "Diana Prince", mark: 88.5 },
+            { id: 5, name: "Ethan Hunt", mark: 62.0 },
+            { id: 6, name: "Fiona Gallagher", mark: 34.5 },
+            { id: 7, name: "George Clark", mark: 95.0 }
+        ];
+
+        let passMarkThreshold = 50;
+
+        window.onload = function() {
+            renderDashboard();
+        };
+
+        function loadSampleData() {
+            studentsArray = [
+                { id: Date.now() + 1, name: "Alexander Wright", mark: 88.0 },
+                { id: Date.now() + 2, name: "Beatrice Hall", mark: 94.5 },
+                { id: Date.now() + 3, name: "Caleb Sterling", mark: 52.0 },
+                { id: Date.now() + 4, name: "Daniela Vance", mark: 76.5 },
+                { id: Date.now() + 5, name: "Elijah Vance", mark: 39.0 },
+                { id: Date.now() + 6, name: "Faith Abbott", mark: 81.5 },
+                { id: Date.now() + 7, name: "Gabriel Soto", mark: 67.0 },
+                { id: Date.now() + 8, name: "Hannah Abbott", mark: 48.5 }
+            ];
+            renderDashboard();
+        }
+
+        function handleAddStudent(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('studentName');
+            const markInput = document.getElementById('studentMark');
+
+            const newStudent = {
+                id: Date.now(),
+                name: nameInput.value.trim(),
+                mark: parseFloat(markInput.value)
+            };
+
+            // Array push operation
+            studentsArray.push(newStudent);
+
+            nameInput.value = '';
+            markInput.value = '';
+            nameInput.focus();
+
+            renderDashboard();
+        }
+
+        function deleteStudent(id) {
+            // Array filter operation to remove the student by ID
+            studentsArray = studentsArray.filter(student => student.id !== id);
+            renderDashboard();
+        }
+
+        function clearAllData() {
+            if (confirmClearAll()) {
+                studentsArray = [];
+                renderDashboard();
+            }
+        }
+
+        function confirmClearAll() {
+            return window.confirm ? confirm("Are you sure you want to clear all student records from the array?") : true;
+        }
+
+        function updatePassMark(val) {
+            passMarkThreshold = parseFloat(val);
+            document.getElementById('passMarkDisplay').innerText = passMarkThreshold + '%';
+            renderDashboard();
+        }
+
+        function openDeployModal() {
+            document.getElementById('deployModal').classList.remove('hidden');
+        }
+
+        function closeDeployModal() {
+            document.getElementById('deployModal').classList.add('hidden');
+        }
+
+        function calculateGrade(mark) {
+            if (mark >= 90) return 'A';
+            if (mark >= 80) return 'B';
+            if (mark >= 70) return 'C';
+            if (mark >= passMarkThreshold) return 'D';
+            return 'F';
+        }
+
+        // Comprehensive Statistical Calculations using native JavaScript Array methods
+        function calculateStatistics(arrayData) {
+            const totalCount = arrayData.length;
+
+            if (totalCount === 0) {
+                return {
+                    total: 0,
+                    average: 0,
+                    median: 0,
+                    mode: '-',
+                    stdDev: 0,
+                    highest: 0,
+                    highestNames: '-',
+                    lowest: 0,
+                    lowestNames: '-',
+                    passCount: 0,
+                    failCount: 0,
+                    passRatio: 0,
+                    grades: { A: 0, B: 0, C: 0, D: 0, F: 0 }
+                };
+            }
+
+            // 1. Average (Mean) using Array.reduce
+            const sumMarks = arrayData.reduce((acc, curr) => acc + curr.mark, 0);
+            const averageMark = (sumMarks / totalCount).toFixed(1);
+
+            // 2. Median calculation
+            const sortedMarks = arrayData.map(s => s.mark).sort((a, b) => a - b);
+            let medianMark = 0;
+            const mid = Math.floor(totalCount / 2);
+            if (totalCount % 2 === 0) {
+                medianMark = ((sortedMarks[mid - 1] + sortedMarks[mid]) / 2).toFixed(1);
+            } else {
+                medianMark = sortedMarks[mid].toFixed(1);
+            }
+
+            // 3. Mode calculation using frequency map
+            const frequencyMap = {};
+            arrayData.forEach(s => {
+                frequencyMap[s.mark] = (frequencyMap[s.mark] || 0) + 1;
+            });
+            let maxFreq = 0;
+            let modes = [];
+            for (let mark in frequencyMap) {
+                if (frequencyMap[mark] > maxFreq) {
+                    maxFreq = frequencyMap[mark];
+                    modes = [mark];
+                } else if (frequencyMap[mark] === maxFreq) {
+                    modes.push(mark);
+                }
+            }
+            const modeResult = maxFreq > 1 ? modes.join(', ') + '%' : 'No mode';
+
+            // 4. Standard Deviation calculation
+            const meanVal = parseFloat(averageMark);
+            const varianceSum = arrayData.reduce((acc, curr) => acc + Math.pow(curr.mark - meanVal, 2), 0);
+            const stdDev = Math.sqrt(varianceSum / totalCount).toFixed(1);
+
+            // 5. Highest and Lowest marks
+            const highestMark = Math.max(...sortedMarks);
+            const lowestMark = Math.min(...sortedMarks);
+
+            const highestStudents = arrayData.filter(s => s.mark === highestMark).map(s => s.name).join(', ');
+            const lowestStudents = arrayData.filter(s => s.mark === lowestMark).map(s => s.name).join(', ');
+
+            // 6. Pass / Fail Breakdown
+            const passingStudents = arrayData.filter(s => s.mark >= passMarkThreshold);
+            const failingStudents = arrayData.filter(s => s.mark < passMarkThreshold);
+            const passRatio = Math.round((passingStudents.length / totalCount) * 100);
+
+            // 7. Grade Distribution
+            const grades = arrayData.reduce((acc, curr) => {
+                const g = calculateGrade(curr.mark);
+                acc[g] = (acc[g] || 0) + 1;
+                return acc;
+            }, { A: 0, B: 0, C: 0, D: 0, F: 0 });
+
+            return {
+                total: totalCount,
+                average: averageMark,
+                median: medianMark,
+                mode: modeResult,
+                stdDev: stdDev,
+                highest: highestMark,
+                highestNames: highestStudents,
+                lowest: lowestMark,
+                lowestNames: lowestStudents,
+                passCount: passingStudents.length,
+                failCount: failingStudents.length,
+                passRatio: passRatio,
+                grades: grades
+            };
+        }
+
+        function renderDashboard() {
+            // Update Array state code inspector
+            document.getElementById('arrayStateViewer').textContent = JSON.stringify(studentsArray, null, 2);
+            document.getElementById('arrayLengthBadge').textContent = studentsArray.length + (studentsArray.length === 1 ? ' item' : ' items');
+
+            const stats = calculateStatistics(studentsArray);
+
+            // Bind KPIs & Advanced Metrics
+            document.getElementById('statTotal').textContent = stats.total;
+            document.getElementById('statAverage').textContent = stats.average + '%';
+            document.getElementById('statMedian').textContent = stats.median + '%';
+            document.getElementById('statMode').textContent = stats.mode;
+            document.getElementById('statStdDev').textContent = stats.stdDev;
+            document.getElementById('statHighest').textContent = stats.highest + '%';
+            document.getElementById('statHighestNames').textContent = stats.highestNames;
+            document.getElementById('statLowest').textContent = stats.lowest + '%';
+            document.getElementById('statLowestNames').textContent = stats.lowestNames;
+
+            // Bind Pass / Fail Breakdown
+            document.getElementById('passCount').textContent = stats.passCount;
+            document.getElementById('failCount').textContent = stats.failCount;
+            document.getElementById('passRatioBadge').textContent = stats.passRatio + '% Passing';
+
+            const passPercent = stats.total > 0 ? (stats.passCount / stats.total) * 100 : 0;
+            const failPercent = stats.total > 0 ? (stats.failCount / stats.total) * 100 : 0;
+            document.getElementById('passBar').style.width = passPercent + '%';
+            document.getElementById('failBar').style.width = failPercent + '%';
+
+            // Bind Grade Distribution
+            const g = stats.grades;
+            document.getElementById('gradeACount').textContent = g.A;
+            document.getElementById('gradeBCount').textContent = g.B;
+            document.getElementById('gradeCCount').textContent = g.C;
+            document.getElementById('gradeDCount').textContent = g.D;
+            document.getElementById('gradeFCount').textContent = g.F;
+
+            document.getElementById('gradeABar').style.width = stats.total > 0 ? (g.A / stats.total) * 100 + '%' : '0%';
+            document.getElementById('gradeBBar').style.width = stats.total > 0 ? (g.B / stats.total) * 100 + '%' : '0%';
+            document.getElementById('gradeCBar').style.width = stats.total > 0 ? (g.C / stats.total) * 100 + '%' : '0%';
+            document.getElementById('gradeDBar').style.width = stats.total > 0 ? (g.D / stats.total) * 100 + '%' : '0%';
+            document.getElementById('gradeFBar').style.width = stats.total > 0 ? (g.F / stats.total) * 100 + '%' : '0%';
+
+            renderTableFilteredAndSorted();
+        }
+
+        function renderTableFilteredAndSorted() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sortMode = document.getElementById('sortSelect').value;
+
+            // Create a working clone of the array with original indices for rank determination
+            let indexedArray = studentsArray.map((student, originalIndex) => ({ ...student, originalIndex }));
+
+            // 1. Filter by search term
+            let processedArray = indexedArray.filter(student => 
+                student.name.toLowerCase().includes(searchTerm)
+            );
+
+            // 2. Sort array based on selected criterion
+            processedArray.sort((a, b) => {
+                if (sortMode === 'rank-asc' || sortMode === 'mark-desc') {
+                    if (b.mark !== a.mark) return b.mark - a.mark;
+                    return a.name.localeCompare(b.name);
+                } else if (sortMode === 'mark-asc') {
+                    if (a.mark !== b.mark) return a.mark - b.mark;
+                    return a.name.localeCompare(b.name);
+                } else if (sortMode === 'name-asc') {
+                    return a.name.localeCompare(b.name);
+                } else if (sortMode === 'name-desc') {
+                    return b.name.localeCompare(a.name);
+                }
+                return 0;
+            });
+
+            // Compute global ranks based on mark descending
+            const rankedMasterList = [...studentsArray].sort((a, b) => b.mark - a.mark);
+
+            const tableBody = document.getElementById('studentTableBody');
+            const emptyState = document.getElementById('emptyTableState');
+            tableBody.innerHTML = '';
+
+            if (processedArray.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            processedArray.forEach((student) => {
+                // Find global rank
+                const rank = rankedMasterList.findIndex(s => s.id === student.id) + 1;
+                const grade = calculateGrade(student.mark);
+                const isPassing = student.mark >= passMarkThreshold;
+
+                let gradeColor = 'bg-indigo-50 text-indigo-700';
+                if (grade === 'A') gradeColor = 'bg-emerald-50 text-emerald-700';
+                else if (grade === 'B') gradeColor = 'bg-blue-50 text-blue-700';
+                else if (grade === 'C') gradeColor = 'bg-cyan-50 text-cyan-700';
+                else if (grade === 'D') gradeColor = 'bg-amber-50 text-amber-700';
+                else if (grade === 'F') gradeColor = 'bg-rose-50 text-rose-700';
+
+                let rankBadge = `<span class="font-mono text-xs font-bold text-slate-500">#${rank}</span>`;
+                if (rank === 1) rankBadge = `<span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5 rounded-md"><i class="fa-solid fa-crown text-amber-600 mr-1"></i>#1</span>`;
+                else if (rank === 2) rankBadge = `<span class="bg-slate-200 text-slate-700 text-[11px] font-bold px-2 py-0.5 rounded-md">#2</span>`;
+                else if (rank === 3) rankBadge = `<span class="bg-amber-50 text-amber-900 text-[11px] font-bold px-2 py-0.5 rounded-md">#3</span>`;
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50/80 transition border-b border-slate-50 last:border-none';
+                row.innerHTML = `
+                    <td class="py-3 px-4">${rankBadge}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800">${escapeHtml(student.name)}</td>
+                    <td class="py-3 px-4 font-mono font-medium text-slate-700">${student.mark.toFixed(1)}%</td>
+                    <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${gradeColor}">${grade}</span></td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isPassing ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isPassing ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${isPassing ? 'Passing' : 'Failing'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="deleteStudent(${student.id})" class="text-slate-400 hover:text-rose-600 transition p-1.5 rounded-lg hover:bg-rose-50" title="Delete record">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function handleSearchFilter() {
+            renderTableFilteredAndSorted();
+        }
+
+        function handleSortChange() {
+            renderTableFilteredAndSorted();
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
